@@ -24,6 +24,7 @@ async function run() {
 
         await client.connect();
         const foodCollection = client.db('foodDB').collection('food')
+        
 
         // insert data to database
         app.post('/food', async (req, res) => {
@@ -33,21 +34,46 @@ async function run() {
             res.send(result)
         })
         // get data from database
-        app.get('/food', async(req, res)=>{
+        app.get('/food', async (req, res) => {
             const cursor = foodCollection.find();
             const result = await cursor.toArray();
             console.log(result);
             res.send(result)
         })
         // find data from database
-        app.get('/food/:id', async(req, res)=>{
+        app.get('/food/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await foodCollection.findOne(query);
             res.send(result);
 
         })
+        // Space food with category
+        app.get('/brand', async (req, res) => {
+            const result = await foodCollection.distinct('name');
+            console.log(result);
+            res.send(result);
+        })
         // update food data 
+        app.put('/food/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateFood = req.body;
+            const food = {
+                $set: {
+                    name: updateFood.name,
+                    brandName: updateFood.brandName,
+                    price: updateFood.price,
+                    category: updateFood.category,
+                    description: updateFood.description,
+                    photo: updateFood.photo,
+                }
+            }
+            const result = await foodCollection.updateOne(filter, food, options);
+            res.send(result)
+
+        })
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
