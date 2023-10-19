@@ -24,7 +24,8 @@ async function run() {
 
         await client.connect();
         const foodCollection = client.db('foodDB').collection('food')
-        
+        const userCollection = client.db('foodDB').collection('user')
+
 
         // insert data to database
         app.post('/food', async (req, res) => {
@@ -74,6 +75,23 @@ async function run() {
             res.send(result)
 
         })
+
+        // user related apis
+        app.get('/user', async (req, res) => {
+            const cursor = userCollection.find();
+            const result = await cursor.toArray();
+            console.log(result);
+            res.send(result)
+        })
+        app.post('/user', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const result = await userCollection.insertOne(user)
+            console.log(result)
+            res.send(result)
+
+        })
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
