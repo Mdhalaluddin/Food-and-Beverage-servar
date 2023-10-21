@@ -24,7 +24,7 @@ async function run() {
 
         await client.connect();
         const foodCollection = client.db('foodDB').collection('food')
-        const userCollection = client.db('foodDB').collection('user')
+        const cartCollection = client.db('foodDB').collection('cart')
 
 
         // insert data to database
@@ -42,16 +42,17 @@ async function run() {
             res.send(result)
         })
         // find data from database
-        app.get('/food/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const result = await foodCollection.findOne(query);
-            res.send(result);
+        // app.get('/food/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: new ObjectId(id) }
+        //     const result = await foodCollection.findOne(query);
+        //     res.send(result);
 
-        })
+        // })
         // Space food with category
-        app.get('/brand', async (req, res) => {
-            const result = await foodCollection.distinct('name');
+        app.get('/food/:brandName', async (req, res) => {
+            const cursor = foodCollection.find({brandName: req.params.brandName});
+            const result = await cursor.toArray();
             console.log(result);
             res.send(result);
         })
@@ -75,22 +76,29 @@ async function run() {
             res.send(result)
 
         })
+            // cart related apis
+            app.delete('/carts/:id', async (req, res) => {
+                const id = req.params.id;
+                console.log("id", id);
+                const query = {
+                     _id: id
+                    };
+                const result = await cartCollection.deleteOne(query);
+                res.send(result)
+            })
 
-        // user related apis
-        app.get('/user', async (req, res) => {
-            const cursor = userCollection.find();
-            const result = await cursor.toArray();
-            console.log(result);
-            res.send(result)
-        })
-        app.post('/user', async (req, res) => {
-            const user = req.body;
-            console.log(user);
-            const result = await userCollection.insertOne(user)
-            console.log(result)
-            res.send(result)
+            app.get('/cart', async (req, res,) => {
+                const cursor = cartCollection.find();
+                const result = await cursor.toArray();
+                res.send(result)
+            }),
+            app.post('/cart', async (req, res) => {
+                const carts = req.body;
+                const result = await cartCollection.insertOne(carts);
+                res.send(result);
+            })
+       
 
-        })
 
 
         await client.db("admin").command({ ping: 1 });
