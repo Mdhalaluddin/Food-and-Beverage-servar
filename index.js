@@ -22,7 +22,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
 
-        await client.connect();
+        // await client.connect();
         const foodCollection = client.db('foodDB').collection('food')
         const cartCollection = client.db('foodDB').collection('cart')
 
@@ -42,20 +42,23 @@ async function run() {
             res.send(result)
         })
         // find data from database
-        // app.get('/food/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: new ObjectId(id) }
-        //     const result = await foodCollection.findOne(query);
-        //     res.send(result);
-
-        // })
-        // Space food with category
-        app.get('/food/:brandName', async (req, res) => {
-            const cursor = foodCollection.find({brandName: req.params.brandName});
-            const result = await cursor.toArray();
-            console.log(result);
+        app.get('/foods/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await foodCollection.findOne(query);
             res.send(result);
         })
+        // Space food with category
+        app.get('/food/:brandName', async (req, res) => {
+            const brandName = req.params.brandName;
+            const query = {brandName:brandName}
+            const result = await foodCollection.find(query).toArray();
+            console.log(result);
+            return res.send(result);
+        })
+        // app.get('/foods/:id', async(req, res)=>{
+        //     const id = 
+        // })
         // update food data 
         app.put('/food/:id', async (req, res) => {
             const id = req.params.id;
@@ -69,6 +72,7 @@ async function run() {
                     price: updateFood.price,
                     category: updateFood.category,
                     description: updateFood.description,
+                    rating: updateFood.rating,
                     photo: updateFood.photo,
                 }
             }
@@ -101,7 +105,7 @@ async function run() {
 
 
 
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
